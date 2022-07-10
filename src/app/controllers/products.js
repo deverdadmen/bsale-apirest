@@ -1,53 +1,54 @@
 
 const { request } = require('express');
 const { httpError } = require('../helpers/handleError');
-const Project = require('../models/product')
+const { Op } = require('sequelize');
+const sequelize = require('../../config/database');
+const Product = require('../models/product');
+const Category = require('../models/category');
 
 const getProducts = async (req, res) => {
 
-    const products = await Project.findAll()
+    try { 
+        const products = await Product.findAll();
+        res.json(products);
+    } catch (error) {
+        return res.status(500).json({ message: error.message });
+    }
+    
+}
 
+const getFindProducts = async (req, res) => {
+    const find = req.params.name
+  
+    const products = await Product.findAll({
+        where: {   
+            name:{
+                [Op.substring]:find
+            }
+        }
+    })
     res.send(products);
 
-    // let lista
-    // conexion.getConnection(function(err, connection) {
-    //     if (err) throw err;
-    //     connection.query('SELECT product.name AS name, product.url_image AS url_image, product.price AS price, product.discount AS discount FROM product', function (error, results, fields) {
-    //         lista = results
-    //         res.send(lista)
-    //         connection.release();        
-    //         if (error) throw error;
-    //     });
-    // });
- 
-}
-
-const getFindProducts = (req, res) => {
-    // const find = req.params.name
-  
-    // conexion.getConnection(function(err, connection) {
-    //     if (err) throw err;
-    //     connection.query(`SELECT product.name AS name, product.url_image AS url_image, product.price AS price, product.discount AS discount FROM product WHERE product.name LIKE '%${find}%'`, function (error, results, fields) {
-    //         lista = results
-    //         res.send(lista)
-    //         connection.release();        
-    //         if (error) throw error;
-    //     });
-    // });
 
 }
 
-const getProductsByCategory = (req, res) => {
-    // const category = req.params.category
-    // conexion.getConnection(function(err, connection) {
-    //     if (err) throw err;
-    //     connection.query(`SELECT product.name AS name, product.url_image AS url_image, product.price AS price, product.discount AS discount FROM product INNER JOIN category ON product.category=category.id WHERE category.name = '${category}'`, function (error, results, fields) {
-    //         lista = results
-    //         res.send(lista)
-    //         connection.release();        
-    //         if (error) throw error;
-    //     });
-    // });
+const getProductsByCategory = async (req, res) => {
+    const category = req.params.category
+
+    const products = await Product.findAll({
+        include: {
+            model: Category,
+            as: 'categoria',
+            required: true,
+            where: {   
+                '$categoria.name$':{
+                    [Op.eq]:category
+                }
+            }
+        }
+    })
+
+    res.send(products)
 
 }
 
