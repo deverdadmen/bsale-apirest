@@ -1,19 +1,17 @@
+const { request } = require('express');
+const { httpError } = require('../helpers/handleError');
+const { Op } = require('sequelize');
+const Product = require('../models/product');
+const Category = require('../models/category');
 
-
-const getCategories = (req, res) => {
-    // let lista
-    // conexion.getConnection(function(err, connection) {
-    //     if (err) throw err;
-    //     connection.query('SELECT * FROM category', function (error, results, fields) {
-    //       lista = results
-    //       res.send({lista})
-    //       connection.release();        
-    //       if (error) throw error;
-    //     });
-    //   });
-
-      //res.send({lista})
-
+const getCategories = async (req, res) => {
+    try {
+      const categories = await Category.findAll()
+      res.send(categories);
+    } catch (error) {
+      return res.status(500).json({ message: error.message });
+    }
+  
 }
 
 module.exports = { getCategories }
